@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Фразобой - Телефон</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background: #1a0b2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .app {
+            max-width: 450px;
+            width: 100%;
+            background: #f8f4ff;
+            border-radius: 40px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 60px rgba(90, 30, 150, 0.6);
+            border: 1px solid #b79eff;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 20px 24px;
+            box-shadow: 0 6px 24px rgba(80, 20, 140, 0.12);
+            margin-bottom: 16px;
+            border: 1px solid #ede6ff;
+        }
+
+        .title {
+            color: #2e1065;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #6b5b8a;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 60px;
+            border: 2px solid #d8b4fe;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            background: white;
+            transition: border 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .btn {
+            background: #7c3aed;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 14px 28px;
+            border-radius: 60px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.15s;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+            background: #5b21b6;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            transform: scale(0.98);
+            pointer-events: none;
+        }
+
+        .btn-success {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-success:active {
+            background: #047857;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e0b3b;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+
+        .timer-bar {
+            height: 6px;
+            background: #ddd6fe;
+            border-radius: 10px;
+            margin: 12px 0 8px;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a78bfa);
+            border-radius: 10px;
+            transition: width 0.3s linear;
+        }
+
+        .timer-label {
+            color: #6b5b8a;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 20px;
+            border: 2px solid #d8b4fe;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            margin: 8px 0;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .status {
+            color: #6b5b8a;
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .vote-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .vote-btn {
+            background: #f5f0ff;
+            border: 2px solid #d8b4fe;
+            border-radius: 20px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #2e1065;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            width: 100%;
+        }
+
+        .vote-btn:active {
+            transform: scale(0.97);
+            background: #ede9fe;
+        }
+
+        .vote-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .round-info {
+            text-align: center;
+            color: #6b5b8a;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .host-actions {
+            margin-top: 12px;
+            border-top: 2px solid #ede9fe;
+            padding-top: 12px;
+        }
+
+        .text-center { text-align: center; }
+        .text-muted { color: #6b5b8a; }
+        .mt-2 { margin-top: 12px; }
+        .mb-2 { margin-bottom: 12px; }
+        .hidden { display: none; }
+
+        .winner-highlight {
+            border-color: #7c3aed;
+            background: #ede9fe;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app" id="app">
+    <!-- ВХОД В ЛОББИ -->
+    <div id="lobbyScreen" class="screen active">
+        <div class="title">Фразобой</div>
+        <div class="subtitle">Присоединиться к игре</div>
+
+        <div class="card">
+            <input type="text" id="playerNameInput" class="input-field" placeholder="Ваше имя" maxlength="20">
+            <button class="btn" id="joinBtn">Войти в игру</button>
+            <div id="lobbyStatus" class="status">Ожидание...</div>
+
+            <div id="hostControls" class="host-actions" style="display: none;">
+                <button class="btn btn-success" id="startGameBtn">Начать игру</button>
+                <div id="startStatus" class="status" style="margin-top: 4px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОТВЕТ НА ВОПРОС -->
+    <div id="answerScreen" class="screen">
+        <div class="card">
+            <div class="round-info" id="roundInfo">Раунд 1</div>
+            <div class="question-text" id="phoneQuestion">Вопрос</div>
+            <div class="timer-bar"><div class="timer-fill" id="phoneTimerFill" style="width:100%"></div></div>
+            <div class="timer-label" id="phoneTimerLabel">0:00</div>
+            <textarea id="answerInput" placeholder="Напишите ваш ответ..."></textarea>
+            <button class="btn" id="submitAnswerBtn">Отправить ответ</button>
+            <div id="answerStatus" class="status">Ожидание вопроса...</div>
+        </div>
+    </div>
+
+    <!-- ГОЛОСОВАНИЕ -->
+    <div id="voteScreen" class="screen">
+        <div class="card">
+            <div class="round-info" id="voteRoundInfo">Голосование</div>
+            <div class="question-text" id="voteQuestion">Вопрос</div>
+            <div class="timer-bar"><div class="timer-fill" id="voteTimerFill" style="width:100%"></div></div>
+            <div class="timer-label" id="voteTimerLabel">0:00</div>
+            <p style="color: #2e1065; font-weight: 600; margin: 8px 0;">Выберите лучший ответ:</p>
+            <div id="voteOptions" class="vote-options"></div>
+            <div id="voteStatus" class="status">Голосование...</div>
+        </div>
+    </div>
+
+    <!-- РЕЗУЛЬТАТЫ -->
+    <div id="resultsScreen" class="screen">
+        <div class="card">
+            <div class="question-text" style="font-size: 1.2rem;" id="resultsTitle">Результаты</div>
+            <div id="resultsList"></div>
+            <div id="resultsStatus" class="status">Ожидание следующей пары...</div>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    let myId = null;
+    let currentState = null;
+    let isHost = false;
+    const SAVED_PLAYER_ID_KEY = 'phraseGamePlayerId';
+    const SAVED_PLAYER_NAME_KEY = 'phraseGamePlayerName';
+
+    const lobbyScreen = document.getElementById('lobbyScreen');
+    const answerScreen = document.getElementById('answerScreen');
+    const voteScreen = document.getElementById('voteScreen');
+    const resultsScreen = document.getElementById('resultsScreen');
+    const playerNameInput = document.getElementById('playerNameInput');
+    const joinBtn = document.getElementById('joinBtn');
+    const lobbyStatus = document.getElementById('lobbyStatus');
+    const hostControls = document.getElementById('hostControls');
+    const startGameBtn = document.getElementById('startGameBtn');
+    const startStatus = document.getElementById('startStatus');
+    const roundInfo = document.getElementById('roundInfo');
+    const phoneQuestion = document.getElementById('phoneQuestion');
+    const phoneTimerFill = document.getElementById('phoneTimerFill');
+    const phoneTimerLabel = document.getElementById('phoneTimerLabel');
+    const answerInput = document.getElementById('answerInput');
+    const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+    const answerStatus = document.getElementById('answerStatus');
+    const voteRoundInfo = document.getElementById('voteRoundInfo');
+    const voteQuestion = document.getElementById('voteQuestion');
+    const voteTimerFill = document.getElementById('voteTimerFill');
+    const voteTimerLabel = document.getElementById('voteTimerLabel');
+    const voteOptions = document.getElementById('voteOptions');
+    const voteStatus = document.getElementById('voteStatus');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsList = document.getElementById('resultsList');
+    const resultsStatus = document.getElementById('resultsStatus');
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function updateUI(state) {
+        currentState = state;
+        if (!state) return;
+
+        const player = state.players ? state.players.find(p => p.id === myId) : null;
+        isHost = player ? player.isHost : false;
+
+        if (state.phase === 'lobby' || !state.gameStarted) {
+            if (isHost && state.players.length >= 4) {
+                hostControls.style.display = 'block';
+                startGameBtn.disabled = false;
+                startStatus.textContent = `${state.players.length} игроков, можно начинать`;
+                startStatus.style.color = '#059669';
+            } else if (isHost && state.players.length < 4) {
+                hostControls.style.display = 'block';
+                startGameBtn.disabled = true;
+                startStatus.textContent = `Нужно минимум 4 игрока (сейчас ${state.players.length})`;
+                startStatus.style.color = '#dc2626';
+            } else {
+                hostControls.style.display = 'none';
+            }
+        } else {
+            hostControls.style.display = 'none';
+        }
+
+        if (state.phase === 'lobby' || !state.gameStarted) {
+            showScreen('lobbyScreen');
+            lobbyStatus.textContent = state.players ? `${state.players.length} игроков в лобби` : 'Ожидание...';
+            return;
+        }
+
+        if (!player && state.phase !== 'lobby') {
+            showScreen('lobbyScreen');
+            lobbyStatus.textContent = 'Вы не в игре';
+            return;
+        }
+
+        const roundText = `Раунд ${state.currentRound}`;
+
+        if (state.phase === 'answering') {
+            showScreen('answerScreen');
+            roundInfo.textContent = roundText;
+
+            let playerQuestion = 'Вопрос';
+            if (state.pairs) {
+                const pair = state.pairs.find(p =>
+                    p.player1Id === myId || p.player2Id === myId
+                );
+                if (pair && pair.question) {
+                    playerQuestion = pair.question;
+                }
+            }
+            phoneQuestion.textContent = playerQuestion;
+            updateTimer(state.timer, phoneTimerFill, phoneTimerLabel);
+
+            const hasAnswered = state.answeredPlayers && state.answeredPlayers.has(myId);
+
+            if (hasAnswered) {
+                answerStatus.textContent = 'Ответ отправлен!';
+                submitAnswerBtn.disabled = true;
+                answerInput.disabled = true;
+            } else {
+                answerStatus.textContent = 'Время на ответ';
+                submitAnswerBtn.disabled = false;
+                answerInput.disabled = false;
+            }
+            return;
+        }
+
+        if (state.phase === 'pair_voting') {
+            showScreen('voteScreen');
+            const currentPair = state.currentPair;
+            if (currentPair) {
+                voteRoundInfo.textContent = `${roundText} - Пара ${state.currentPairIndex + 1} из ${state.totalPairs}`;
+                voteQuestion.textContent = currentPair.question || 'Вопрос';
+                updateTimer(state.timer, voteTimerFill, voteTimerLabel);
+
+                const answers = currentPair.answers || [];
+                if (answers.length > 0) {
+                    const hasVoted = player ? player.voted : false;
+                    voteOptions.innerHTML = answers.map((ans, i) => `
+                        <button class="vote-btn" data-index="${i}" ${hasVoted || ans.playerId === myId ? 'disabled' : ''}>
+                            ${ans.answer || ans.text}
+                        </button>
+                    `).join('');
+
+                    document.querySelectorAll('.vote-btn').forEach(btn => {
+                        btn.onclick = function() {
+                            const index = parseInt(this.dataset.index);
+                            socket.emit('vote', { answerIndex: index });
+                            voteStatus.textContent = 'Голос учтён!';
+                            this.disabled = true;
+                        };
+                    });
+
+                    voteStatus.textContent = hasVoted ? 'Голос учтён' : 'Выберите лучший ответ';
+                } else {
+                    voteOptions.innerHTML = '<p class="text-muted">Ожидание ответов...</p>';
+                }
+            }
+            return;
+        }
+
+        if (state.phase === 'pair_results') {
+            showScreen('resultsScreen');
+            const currentPair = state.currentPair;
+            if (currentPair) {
+                resultsTitle.textContent = `Результаты - ${currentPair.question || 'Вопрос'}`;
+
+                const answers = currentPair.answers || [];
+                if (answers.length > 0) {
+                    const maxVotes = Math.max(...answers.map(a => a.votes || 0));
+                    resultsList.innerHTML = answers.map((ans, i) => {
+                        const isWinner = ans.votes === maxVotes && maxVotes > 0;
+                        return `
+                            <div class="vote-btn ${isWinner ? 'winner-highlight' : ''}">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>${ans.answer || ans.text}</span>
+                                    <span style="font-weight: 700; color: #7c3aed;">${ans.votes || 0} голосов</span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #6b5b8a; margin-top: 4px;">
+                                    ${ans.playerName} ${isWinner ? '★' : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    resultsList.innerHTML = '<p class="text-muted">Нет результатов</p>';
+                }
+
+                resultsStatus.textContent = 'Следующая пара начнётся через несколько секунд...';
+            }
+            return;
+        }
+
+        if (state.phase === 'leader') {
+            showScreen('resultsScreen');
+            resultsTitle.textContent = 'Игра окончена!';
+            const sorted = [...state.players].sort((a, b) => (b.score || 0) - (a.score || 0));
+            const topScore = sorted.length > 0 ? sorted[0].score : 0;
+            resultsList.innerHTML = sorted.map((p, idx) => `
+                <div class="vote-btn ${p.score === topScore && topScore > 0 ? 'winner-highlight' : ''}">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>${idx + 1}. ${p.name}</span>
+                        <span style="font-weight: 700; color: #7c3aed;">${p.score || 0} баллов</span>
+                    </div>
+                </div>
+            `).join('');
+            resultsStatus.textContent = 'Спасибо за игру!';
+        }
+    }
+
+    function updateTimer(timer, fillEl, labelEl) {
+        if (timer === undefined || timer === null) return;
+        const pct = Math.max(0, (timer / 90) * 100);
+        fillEl.style.width = `${Math.min(100, pct)}%`;
+        const m = Math.floor(timer / 60);
+        const s = Math.floor(timer % 60);
+        labelEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function tryReconnect() {
+        const savedId = localStorage.getItem(SAVED_PLAYER_ID_KEY);
+        const savedName = localStorage.getItem(SAVED_PLAYER_NAME_KEY);
+        if (savedId && savedName) {
+            console.log('Попытка переподключения как', savedName);
+            socket.emit('reconnectPlayer', { playerId: savedId, name: savedName });
+            return true;
+        }
+        return false;
+    }
+
+    socket.on('connect', () => {
+        console.log('Подключено к серверу');
+        tryReconnect();
+    });
+
+    socket.on('initState', (state) => {
+        myId = state.myId;
+        if (myId) {
+            const player = state.players.find(p => p.id === myId);
+            if (player) {
+                localStorage.setItem(SAVED_PLAYER_ID_KEY, myId);
+                localStorage.setItem(SAVED_PLAYER_NAME_KEY, player.name);
+            }
+        }
+        updateUI(state);
+    });
+
+    socket.on('stateUpdate', (state) => {
+        updateUI(state);
+    });
+
+    socket.on('error', (msg) => {
+        alert(msg);
+    });
+
+    socket.on('answerReceived', (data) => {
+        if (data.success) {
+            answerStatus.textContent = 'Ответ отправлен!';
+            submitAnswerBtn.disabled = true;
+            answerInput.disabled = true;
+        }
+    });
+
+    socket.on('voteReceived', (data) => {
+        if (data.success) {
+            voteStatus.textContent = 'Голос учтён!';
+        }
+    });
+
+    joinBtn.onclick = function() {
+        const name = playerNameInput.value.trim();
+        if (!name) {
+            alert('Введите ваше имя');
+            return;
+        }
+        socket.emit('joinGame', { name });
+        joinBtn.disabled = true;
+        lobbyStatus.textContent = 'Подключение...';
+    };
+
+    startGameBtn.onclick = function() {
+        socket.emit('startGame');
+        startGameBtn.disabled = true;
+        startStatus.textContent = 'Запуск игры...';
+        startStatus.style.color = '#d97706';
+    };
+
+    submitAnswerBtn.onclick = function() {
+        const text = answerInput.value.trim();
+        if (!text) {
+            alert('Напишите ответ');
+            return;
+        }
+        socket.emit('submitAnswer', { answer: text });
+        answerStatus.textContent = 'Отправка...';
+        submitAnswerBtn.disabled = true;
+    };
+
+    answerInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submitAnswerBtn.click();
+        }
+    });
+
+    playerNameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            joinBtn.click();
+        }
+    });
+
+    const savedName = localStorage.getItem(SAVED_PLAYER_NAME_KEY);
+    if (savedName) {
+        playerNameInput.value = savedName;
+    }
+
+    console.log('Телефонная версия загружена.');
+</script>
+</body>
+</html>

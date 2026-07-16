@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фразобой - Главный экран</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background: #1a0b2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app {
+            max-width: 900px;
+            width: 100%;
+            background: #f8f4ff;
+            border-radius: 48px;
+            padding: 32px 36px;
+            box-shadow: 0 20px 60px rgba(90, 30, 150, 0.6);
+            border: 1px solid #b79eff;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pointGain {
+            0% { transform: scale(1); background: #f8f4ff; }
+            30% { transform: scale(1.15); background: #d8b4fe; }
+            70% { transform: scale(1.05); background: #e9d5ff; }
+            100% { transform: scale(1); background: transparent; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 24px 28px;
+            box-shadow: 0 6px 24px rgba(80, 20, 140, 0.12);
+            margin-bottom: 20px;
+            border: 1px solid #ede6ff;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header h1 {
+            color: #2e1065;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+        }
+
+        .badge {
+            background: #7c3aed;
+            color: white;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-secondary {
+            background: #c4b5fd;
+            color: #2e1065;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .qr-container img {
+            background: white;
+            padding: 16px;
+            border-radius: 24px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+        }
+
+        .player-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .player-chip {
+            background: #ede9fe;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2e1065;
+            border: 1px solid #d8b4fe;
+        }
+
+        .player-chip.host {
+            background: #7c3aed;
+            color: white;
+            border-color: #4c1d95;
+        }
+
+        .waiting-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4c1d95;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .timer-bar {
+            height: 6px;
+            background: #ddd6fe;
+            border-radius: 10px;
+            margin: 16px 0 8px;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a78bfa);
+            border-radius: 10px;
+            transition: width 0.3s linear;
+        }
+
+        .timer-label {
+            color: #6b5b8a;
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-align: center;
+            display: block;
+        }
+
+        .pair-counter {
+            text-align: center;
+            color: #6b5b8a;
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+
+        .questions-count {
+            text-align: center;
+            color: #6b5b8a;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .min-players-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .leader-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #f5f0ff;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            border: 1px solid #e0d7ff;
+            font-weight: 600;
+        }
+
+        .leader-item.winner {
+            background: #7c3aed;
+            color: white;
+            border-color: #4c1d95;
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
+        }
+
+        .leader-item.winner .score {
+            color: #fde68a;
+        }
+
+        .score {
+            font-weight: 700;
+            color: #6d28d9;
+        }
+
+        .pair-container {
+            margin-top: 16px;
+            padding: 24px 28px;
+            background: #f5f0ff;
+            border-radius: 24px;
+            border: 2px solid #d8b4fe;
+        }
+
+        .pair-question {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e0b3b;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 8px 0;
+        }
+
+        .pair-answers {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .pair-answer-item {
+            background: white;
+            border-radius: 20px;
+            padding: 18px 24px;
+            border-left: 8px solid #7c3aed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 1.1rem;
+        }
+
+        .pair-answer-item .votes {
+            background: #c4b5fd;
+            padding: 4px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            color: #2e1065;
+            font-size: 1rem;
+        }
+
+        .pair-answer-item .author {
+            font-weight: 600;
+            color: #4c1d95;
+            font-size: 1rem;
+        }
+
+        .pair-answer-item.point-animation {
+            animation: pointGain 0.6s ease forwards;
+        }
+
+        .text-center { text-align: center; }
+        .text-muted { color: #6b5b8a; }
+        .mt-2 { margin-top: 16px; }
+        .mb-2 { margin-bottom: 16px; }
+        .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .ip-address {
+            color: #4c1d95;
+            font-weight: 600;
+            background: #ede9fe;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .app { padding: 16px; border-radius: 28px; }
+            .qr-container img { width: 150px; height: 150px; }
+            .header h1 { font-size: 1.5rem; }
+            .waiting-text { font-size: 1.5rem; }
+            .pair-question { font-size: 1.3rem; }
+            .pair-container { padding: 16px; }
+            .pair-answer-item { font-size: 1rem; padding: 14px 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app" id="app">
+    <!-- ЛОББИ -->
+    <div id="lobbyScreen" class="screen active">
+        <div class="header">
+            <h1>Фразобой</h1>
+            <span class="badge" id="playerCountBadge">0 игроков</span>
+        </div>
+
+        <div class="card">
+            <div class="qr-container">
+                <img id="qrCodeImg" src="" alt="QR-код для входа">
+                <p class="text-muted">Отсканируйте QR-код на телефоне, чтобы присоединиться</p>
+                <div class="flex-row">
+                    <span class="badge" id="hostBadge">Ожидание хоста</span>
+                    <span class="badge badge-secondary" id="gameStatusBadge">Ожидание игроков</span>
+                </div>
+                <div class="flex-row" style="margin-top: 8px;">
+                    <span class="ip-address" id="serverIpDisplay">IP: загрузка...</span>
+                </div>
+                <div class="flex-row" style="margin-top: 8px;">
+                    <span id="minPlayersBadge" class="min-players-badge" style="background: #dc2626; color: white;">⚠️ Нужно 4+ игроков (сейчас 0)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <p style="font-weight: 600; color: #2e1065; margin-bottom: 8px;">Участники:</p>
+            <div id="playerList" class="player-grid">
+                <span class="text-muted">Ожидание игроков...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ИГРА -->
+    <div id="gameScreen" class="screen">
+        <div class="header">
+            <div>
+                <span class="badge" id="roundInfo">Раунд 1 / 3</span>
+                <span class="badge badge-secondary" id="pairCounter" style="margin-left: 8px;">Пара 1 из 1</span>
+            </div>
+            <span class="badge" id="gamePlayerCount">0 игроков</span>
+        </div>
+
+        <div class="card">
+            <div class="waiting-text" id="waitingText">Участники отвечают на вопросы</div>
+            <div class="timer-bar"><div class="timer-fill" id="gameTimerFill" style="width:100%"></div></div>
+            <span class="timer-label" id="gameTimerLabel">0:00</span>
+            <div class="questions-count" id="questionsCount"></div>
+        </div>
+
+        <!-- БОЛЬШОЙ БЛОК: ВОПРОС + 2 ОТВЕТА -->
+        <div id="pairContainer" style="display: none;">
+            <div class="pair-container">
+                <div class="pair-question" id="pairQuestion">Вопрос</div>
+                <div class="pair-answers" id="pairAnswers"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЛИДЕРЫ -->
+    <div id="leaderScreen" class="screen">
+        <div class="header">
+            <h1>Лидеры игры</h1>
+            <span class="badge">Финал</span>
+        </div>
+        <div id="leaderList" class="card" style="padding: 12px 16px;"></div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    let currentState = null;
+    let serverIp = '';
+
+    function getServerIP() {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            serverIp = hostname;
+        } else {
+            serverIp = hostname;
+        }
+        updateQRCode();
+    }
+
+    function updateQRCode() {
+        const url = window.location.protocol + '//' + serverIp + ':' + window.location.port + '/phone';
+        document.getElementById('qrCodeImg').src =
+            `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+        document.getElementById('serverIpDisplay').textContent = 'Сервер: ' + serverIp + ':' + window.location.port;
+    }
+
+    getServerIP();
+
+    const lobbyScreen = document.getElementById('lobbyScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const leaderScreen = document.getElementById('leaderScreen');
+    const qrCodeImg = document.getElementById('qrCodeImg');
+    const playerList = document.getElementById('playerList');
+    const playerCountBadge = document.getElementById('playerCountBadge');
+    const hostBadge = document.getElementById('hostBadge');
+    const gameStatusBadge = document.getElementById('gameStatusBadge');
+    const minPlayersBadge = document.getElementById('minPlayersBadge');
+    const roundInfo = document.getElementById('roundInfo');
+    const pairCounter = document.getElementById('pairCounter');
+    const waitingText = document.getElementById('waitingText');
+    const gameTimerFill = document.getElementById('gameTimerFill');
+    const gameTimerLabel = document.getElementById('gameTimerLabel');
+    const gamePlayerCount = document.getElementById('gamePlayerCount');
+    const questionsCount = document.getElementById('questionsCount');
+    const pairContainer = document.getElementById('pairContainer');
+    const pairQuestion = document.getElementById('pairQuestion');
+    const pairAnswers = document.getElementById('pairAnswers');
+    const leaderList = document.getElementById('leaderList');
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function renderPairAnswers(answers, showNames, isResults) {
+        if (!answers || answers.length === 0) {
+            return '<p class="text-muted">Нет ответов</p>';
+        }
+
+        let maxVotes = -1;
+        if (isResults) {
+            answers.forEach(a => {
+                if (a.votes > maxVotes) maxVotes = a.votes;
+            });
+        }
+
+        let html = '';
+        answers.forEach((ans) => {
+            const isWinner = isResults && ans.votes > 0 && ans.votes === maxVotes;
+            const nameHtml = showNames && ans.playerName
+                ? `<span class="author">${ans.playerName}</span>`
+                : '<span class="author" style="color:#a78bfa;">Аноним</span>';
+
+            const winnerClass = isWinner ? ' point-animation' : '';
+
+            html += `
+                <div class="pair-answer-item${winnerClass}">
+                    <span style="font-weight: 500;">${ans.answer || ans.text}</span>
+                    <div>
+                        <span class="votes">${ans.votes || 0}</span>
+                        ${nameHtml}
+                    </div>
+                </div>
+            `;
+        });
+        return html;
+    }
+
+    function updateUI(state) {
+        currentState = state;
+        if (!state) return;
+
+        if (state.players) {
+            const players = state.players;
+            const count = players.length;
+            playerCountBadge.textContent = `${count} игроков`;
+            gamePlayerCount.textContent = `${count} игроков`;
+
+            if (count >= 4) {
+                minPlayersBadge.textContent = '✅ 4+ игроков';
+                minPlayersBadge.style.background = '#059669';
+                minPlayersBadge.style.color = 'white';
+            } else {
+                minPlayersBadge.textContent = `⚠️ Нужно 4+ игроков (сейчас ${count})`;
+                minPlayersBadge.style.background = '#dc2626';
+                minPlayersBadge.style.color = 'white';
+            }
+
+            if (players.length === 0) {
+                playerList.innerHTML = '<span class="text-muted">Ожидание игроков...</span>';
+            } else {
+                playerList.innerHTML = players.map(p =>
+                    `<span class="player-chip ${p.isHost ? 'host' : ''}">${p.name}</span>`
+                ).join('');
+            }
+
+            const host = players.find(p => p.isHost);
+            hostBadge.textContent = host ? `Хост: ${host.name}` : 'Ожидание хоста';
+        }
+
+        if (state.gameStarted) {
+            gameStatusBadge.textContent = 'Игра идёт';
+            gameStatusBadge.style.background = '#059669';
+        } else {
+            gameStatusBadge.textContent = state.totalPlayers >= 4 ? 'Ожидание старта...' : 'Нужно 4+ игроков';
+            gameStatusBadge.style.background = '#c4b5fd';
+        }
+
+        if (state.phase === 'lobby' || !state.gameStarted) {
+            showScreen('lobbyScreen');
+            return;
+        }
+
+        if (state.phase === 'leader') {
+            showScreen('leaderScreen');
+            const sorted = [...state.players].sort((a, b) => (b.score || 0) - (a.score || 0));
+            const topScore = sorted.length > 0 ? sorted[0].score : 0;
+            leaderList.innerHTML = sorted.map((p, idx) => `
+                <div class="leader-item ${p.score === topScore && topScore > 0 ? 'winner' : ''}">
+                    <span>${idx + 1}. ${p.name}</span>
+                    <span class="score">${p.score || 0} баллов</span>
+                </div>
+            `).join('');
+            return;
+        }
+
+        showScreen('gameScreen');
+        roundInfo.textContent = `Раунд ${state.currentRound} / 3`;
+
+        const totalPairs = state.totalPairs || 1;
+        const currentPairNum = state.currentPairIndex + 1;
+        pairCounter.textContent = `Пара ${Math.min(currentPairNum, totalPairs)} из ${totalPairs}`;
+        questionsCount.textContent = `Всего ${totalPairs} пар в этом раунде`;
+
+        updateTimer(state.timer, gameTimerFill, gameTimerLabel);
+
+        if (state.phase === 'answering') {
+            waitingText.textContent = 'Участники отвечают на вопросы';
+            pairContainer.style.display = 'none';
+            return;
+        }
+
+        if (state.currentPair && state.currentPair.answers) {
+            pairContainer.style.display = 'block';
+            pairQuestion.textContent = state.currentPair.question || 'Вопрос';
+
+            const isResults = state.phase === 'pair_results';
+            const answers = state.currentPair.answers || [];
+            const showNames = isResults;
+
+            pairAnswers.innerHTML = renderPairAnswers(answers, showNames, isResults);
+
+            if (state.phase === 'pair_voting') {
+                waitingText.textContent = 'Голосование!';
+            } else if (state.phase === 'pair_results') {
+                waitingText.textContent = 'Результаты пары';
+            }
+        } else {
+            pairContainer.style.display = 'none';
+        }
+    }
+
+    function updateTimer(timer, fillEl, labelEl) {
+        if (timer === undefined || timer === null) return;
+        const pct = Math.max(0, (timer / 90) * 100);
+        fillEl.style.width = `${Math.min(100, pct)}%`;
+        const m = Math.floor(timer / 60);
+        const s = Math.floor(timer % 60);
+        labelEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    socket.on('initState', (state) => {
+        updateUI(state);
+    });
+
+    socket.on('stateUpdate', (state) => {
+        updateUI(state);
+    });
+</script>
+</body>
+</html>
