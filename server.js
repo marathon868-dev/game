@@ -74,21 +74,38 @@ const QUESTION_BANK = [
     'Когда я злюсь, я обычно'
 ];
 
-let gameState = {
-    players: [],
-    phase: 'lobby',
-    currentRound: 1,
-    pairs: [],
-    currentPairIndex: 0,
-    timer: 0,
-    timerInterval: null,
-    gameStarted: false,
-    resultsPhase: false,
-    answeredPlayers: new Set(),
-};
+// ===== НАЧАЛЬНОЕ СОСТОЯНИЕ =====
+function getInitialState() {
+    return {
+        players: [],
+        phase: 'lobby',
+        currentRound: 1,
+        pairs: [],
+        currentPairIndex: 0,
+        timer: 0,
+        timerInterval: null,
+        gameStarted: false,
+        resultsPhase: false,
+        answeredPlayers: new Set(),
+        questions: [],
+    };
+}
 
+let gameState = getInitialState();
 let hostId = null;
 const activeSockets = new Set();
+
+// ===== СБРОС ИГРЫ =====
+function resetGame() {
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
+    gameState = getInitialState();
+    hostId = null;
+    broadcastState();
+    console.log('Игра сброшена');
+}
 
 function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -367,6 +384,42 @@ io.on('connection', (socket) => {
     console.log('Пользователь подключен:', socket.id);
     activeSockets.add(socket.id);
 
+    // ===== ОТПРАВЛЯЕМ ТЕКУЩЕЕ СОСТОЯНИЕ ПРИ ПОДКЛЮЧЕНИИ =====
+    const currentPair = getCurrentPair();
+    const publicState = {
+        phase: gameState.phase,
+        players: gameState.players.map(p => ({
+            id: p.id,
+            name: p.name,
+            isHost: p.isHost,
+            score: p.score
+        })),
+        currentRound: gameState.currentRound,
+        pairs: gameState.pairs.map(p => ({
+            pairId: p.pairId,
+            player1Id: p.player1Id,
+            player2Id: p.player2Id,
+            question: p.question,
+            answers: p.answers || []
+        })),
+        currentPairIndex: gameState.currentPairIndex,
+        currentPair: currentPair ? {
+            pairId: currentPair.pairId,
+            question: currentPair.question,
+            answers: currentPair.answers || []
+        } : null,
+        timer: gameState.timer,
+        totalPlayers: gameState.players.length,
+        gameStarted: gameState.gameStarted,
+        resultsPhase: gameState.resultsPhase,
+        answeredCount: gameState.answeredPlayers.size,
+        totalPairs: gameState.pairs.length,
+        hostId: hostId,
+        myId: socket.id,
+        isHost: false,
+    };
+    socket.emit('initState', publicState);
+
     socket.on('reconnectPlayer', ({ playerId, name }) => {
         console.log(`Попытка переподключения игрока ${name} (${playerId})`);
 
@@ -419,6 +472,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinGame', ({ name }) => {
+        // Если игра уже завершена (leader), сбрасываем её
+        if (gameState.phase === 'leader') {
+            resetGame();
+        }
+
         const existing = gameState.players.find(p => p.name === name && p.id !== socket.id);
         if (existing) {
             socket.emit('error', 'Имя уже занято');
