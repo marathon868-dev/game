@@ -13,14 +13,20 @@ const io = new Server(server, {
     }
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+const PUBLIC_DIR = path.join(__dirname, 'public');
 
-app.get('/phone', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'phone.html'));
-});
+app.use(express.static(PUBLIC_DIR));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+});
+
+app.get('/phone', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'phone.html'));
+});
+
+app.get('/phone.html', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'phone.html'));
 });
 
 function getLocalIP() {
@@ -166,7 +172,6 @@ function createPairs() {
     const numPairs = Math.floor(players.length / 2);
     const totalPairs = Math.max(1, numPairs);
 
-    // Берём вопросы для этого раунда (по одному на каждую пару)
     const questions = [];
     const startIdx = (gameState.currentRound - 1) * 10;
     for (let i = 0; i < Math.min(totalPairs, 10); i++) {
@@ -307,7 +312,6 @@ function finishPairVoting() {
 }
 
 function finishRound() {
-    // Переход к следующему раунду
     gameState.currentRound++;
     gameState.currentPairIndex = 0;
 
@@ -317,7 +321,6 @@ function finishRound() {
         return;
     }
 
-    // Пауза перед следующим раундом
     setTimeout(() => {
         startAnswering();
     }, 3000);
@@ -625,14 +628,6 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-const localIP = getLocalIP();
-
 server.listen(PORT, '0.0.0.0', () => {
-    console.log('\n========================================');
-    console.log('Сервер запущен!');
-    console.log('========================================');
-    console.log(`Компьютер: http://localhost:${PORT}`);
-    console.log(`Компьютер: http://${localIP}:${PORT}`);
-    console.log(`Телефон:   http://${localIP}:${PORT}/phone`);
-    console.log('========================================\n');
+    console.log(`Сервер запущен на порту ${PORT}`);
 });
